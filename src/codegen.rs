@@ -1,0 +1,121 @@
+use std::fmt::format;
+use crate::ast::{Binop, Expr, FunctionDecl, Stmt, VariableDecl};
+
+pub struct CodeGen {
+    output: String,
+    isize: usize,   /* indent size */
+}
+
+impl CodeGen {
+    pub fn new() -> Self {
+        Self {
+            output: String::new(),
+            isize: 0,
+        }
+    }
+
+    pub fn generate(&mut self, stmts: &[Stmt]) -> Result<String, String> {
+        for stmt in stmts {
+            self.generate_stmt(stmt)?;
+        }
+
+        Ok(self.output.clone())
+    }
+
+    fn generate_stmt(&mut self, stmt: &Stmt) -> Result<(), String> {
+        match stmt {
+            Stmt::VariableDecl(vdecl) => self.generate_var_decl(vdecl),
+            Stmt::FunctionDecl(fdecl) => self.generate_fn_decl(fdecl),
+            Stmt::Expression(expr) => self.generate_expr_stmt(expr)
+        }
+    }
+
+    fn generate_var_decl(&mut self, var_decl: &VariableDecl) -> Result<(), String> {
+        let value = match var_decl.value {
+            Expr::Number(n) => n,
+            _ => 0.0
+        };
+
+        self.emit(format!("    mov DWORD PTR [rbp-4], {}\n", value).as_str());
+        Ok(())
+    }
+
+    fn generate_fn_decl(&mut self, func_decl: &FunctionDecl) -> Result<(), String> {
+        self.emit(format!("{}:\n", func_decl.name).as_str());
+        self.emit_line("    push rbp");
+        self.emit_line("    mov rbp, rsp");
+
+        for stmt in func_decl.body.iter() {
+            self.generate_stmt(&stmt)?;
+        }
+
+        self.emit_line("    mov eax, 0");
+        self.emit_line("    pop rbp");
+        self.emit_line("    ret");
+        Ok(())
+    }
+
+    fn generate_expr(&mut self, expr: &Expr) -> Result<(), String> {
+        match expr {
+            Expr::Number(n) => self.generate_number(*n),
+            Expr::String(s) => self.generate_string(s),
+            Expr::Identifier(ident) => self.generate_identifier(ident),
+            Expr::BinaryOp { left, op, right } => self.generate_binary_op(left, op, right),
+        }
+    }
+
+    fn generate_expr_stmt(&mut self, expr: &Expr) -> Result<(), String> {
+        todo!("impl expr stmt generation")
+    }
+
+    fn generate_number(&mut self, n: f64) -> Result<(), String> {
+        todo!("impl number generation")
+    }
+
+    fn generate_string(&mut self, s: &str) -> Result<(), String> {
+        todo!("impl string generation")
+    }
+
+    fn generate_identifier(&mut self, ident: &str) -> Result<(), String> {
+        todo!("impl identifier ref")
+    }
+
+    fn generate_binary_op(&mut self, left: &Expr, op: &Binop, right: &Expr) -> Result<(), String> {
+        todo!("impl me in gen binop!")
+    }
+
+    fn emit(&mut self, code: &str) {
+        self.output.push_str(code);
+    }
+
+    fn emit_line(&mut self, code: &str) {
+        self.emit_indent();
+        self.output.push_str(code);
+        self.output.push('\n');
+    }
+
+    fn emit_indent(&mut self) {
+        for _ in 0..self.isize {
+            self.output.push_str("    ");
+        }
+    }
+
+    fn inc_indent(&mut self) {
+        self.isize += 1;
+    }
+
+    fn dec_ident(&mut self) {
+        if self.isize > 0 {
+            self.isize -= 1;
+        }
+    }
+
+    pub fn get_output(&self) -> &str {
+        &self.output
+    }
+
+    pub fn clear(&mut self) {
+        self.output.clear();
+        self.isize = 0;
+    }
+}
