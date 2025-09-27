@@ -7,9 +7,10 @@ Code generation is dead simple and can only support these straight forward compi
 As of `28/09/2025` the compiler can emit local variables.
 For example, `char c = 'a';` will emit `mov BYTE PTR [rbp-1], 97`.
 Multiple local variable declarations will affect the frame point offset depending on
-data type size: `int` subtracts `4` bytes, `char` subtracts `1` byte.
+data type size: `int` subtracts `4` bytes, `char` subtracts `1` byte, 'char*' subtracts '8' bytes.
 
-[+] System V ABI calling convention on x86-64 Linux.
+[x] System V ABI calling convention on x86-64 Linux.
+[x] `char*` strings.
 
 ```c
 int main() {

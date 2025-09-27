@@ -1,8 +1,11 @@
+use std::collections::HashMap;
 use std::fmt::format;
 use crate::ast::{Binop, Expr, FunctionDecl, Stmt, VariableDecl};
 
 pub struct CodeGen {
     output: String,
+    strings: HashMap<String, usize>,
+    label_count: usize,
     rbp_offset: usize,
     isize: usize,   /* indent size */
 }
@@ -11,6 +14,8 @@ impl CodeGen {
     pub fn new() -> Self {
         Self {
             output: String::new(),
+            strings: HashMap::new(),
+            label_count: 0,
             rbp_offset: 0,
             isize: 0,
         }
@@ -41,6 +46,7 @@ impl CodeGen {
         let size_offset = match var_decl.data_type.as_str() {
             "int" => 4,
             "char" => 1,
+            "char*" => 8,
             _ => 0,
         };
 
@@ -53,7 +59,8 @@ impl CodeGen {
                 if str.len() == 1 {
                     Ok(self.emit(format!("    mov BYTE PTR [rbp-{}], {}\n", self.rbp_offset, str.as_bytes()[0]).as_str()))
                 } else {
-                    Ok(())
+                    self.generate_string(&*str)?;
+                    Ok(self.emit(format!("    mov QWORD PTR [rbp-{}], OFFSET FLAT:.LC{}\n", self.rbp_offset, self.strings.get(&str).unwrap()).as_str()))
                 }
             }
             _ => Ok(())
@@ -95,7 +102,10 @@ impl CodeGen {
     }
 
     fn generate_string(&mut self, s: &str) -> Result<(), String> {
-        todo!("impl string generation")
+        let lc = self.label_count.to_owned();
+        self.label_count += 1;
+        self.strings.insert(s.parse().unwrap(), lc);
+        Ok(self.emit_label_with_code(format!("LC{}", lc).as_str(), format!(".string \"{}\"", s).as_str()))
     }
 
     fn generate_identifier(&mut self, ident: &str) -> Result<(), String> {
@@ -108,6 +118,10 @@ impl CodeGen {
 
     fn emit(&mut self, code: &str) {
         self.output.push_str(code);
+    }
+
+    fn emit_label_with_code(&mut self, label: &str, code: &str) {
+        self.output.insert_str(0, format!(".{}: {}\n", label, code).as_str());
     }
 
     fn emit_line(&mut self, code: &str) {
