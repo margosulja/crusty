@@ -1,3 +1,4 @@
-int smth() {
-    int x = 23213125;
+int main() {
+    int x = 10;
+    char w = 'a';
 }

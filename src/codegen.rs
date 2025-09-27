@@ -3,6 +3,7 @@ use crate::ast::{Binop, Expr, FunctionDecl, Stmt, VariableDecl};
 
 pub struct CodeGen {
     output: String,
+    rbp_offset: usize,
     isize: usize,   /* indent size */
 }
 
@@ -10,6 +11,7 @@ impl CodeGen {
     pub fn new() -> Self {
         Self {
             output: String::new(),
+            rbp_offset: 0,
             isize: 0,
         }
     }
@@ -36,8 +38,28 @@ impl CodeGen {
             _ => 0.0
         };
 
-        self.emit(format!("    mov DWORD PTR [rbp-4], {}\n", value).as_str());
-        Ok(())
+        let size_offset = match var_decl.data_type.as_str() {
+            "int" => 4,
+            "char" => 1,
+            _ => 0,
+        };
+
+        self.rbp_offset += size_offset;
+
+        match var_decl.value.clone() {
+            Expr::Number(n) => Ok(self.emit(format!("    mov DWORD PTR [rbp-{}], {}\n", self.rbp_offset, n).as_str())),
+            Expr::String(str) => {
+                /* only process chars */
+                if str.len() == 1 {
+                    Ok(self.emit(format!("    mov BYTE PTR [rbp-{}], {}\n", self.rbp_offset, str.as_bytes()[0]).as_str()))
+                } else {
+                    Ok(())
+                }
+            }
+            _ => Ok(())
+        }
+
+        // Ok(())
     }
 
     fn generate_fn_decl(&mut self, func_decl: &FunctionDecl) -> Result<(), String> {

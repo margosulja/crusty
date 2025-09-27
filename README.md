@@ -3,11 +3,34 @@ A simple C compiler which targets x86-64 gcc 15.2
 
 Code generation is dead simple and can only support these straight forward compilations, more support will be added soon.
 
-# Example
+# Latest Update
+As of `28/09/2025` the compiler can emit local variables.
+For example, `char c = 'a';` will emit `mov BYTE PTR [rbp-1], 97`.
+Multiple local variable declarations will affect the frame point offset depending on
+data type size: `int` subtracts `4` bytes, `char` subtracts `1` byte.
+
+[+] System V ABI calling convention on x86-64 Linux.
+
 ```c
 int main() {
-    int x = 5;
+    int x = 10;
+    char w = 'a';
 }
+```
+
+```asm
+main:
+    push rbp
+    mov rbp, rsp
+    
+    ; int x = 10
+    mov DWORD PTR [rbp-4], 10
+    ; char w = 'a';
+    mov BYTE PTR [rbp-5], 97
+    
+    mov eax, 0
+    pop rbp
+    ret
 ```
 
 #### Emission
