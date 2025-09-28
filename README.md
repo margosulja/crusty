@@ -1,6 +1,12 @@
 # crusty
 A simple C compiler which targets x86-64 gcc 15.2
 
+# Usage
+crusty will automatically assemble and link the generated assembly for you.
+```
+$ crusty main.c
+```
+
 # Features & Info
 - Local variable declarations.
 - Function declarations.
