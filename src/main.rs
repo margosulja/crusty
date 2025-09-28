@@ -25,7 +25,7 @@ fn main() {
         let asm = codegen.generate(&*program).unwrap();
 
         println!("{asm}");
-        write(format!("{}_output.asm", file).as_str(), asm).unwrap();
+        write("out.s", asm).unwrap();
     }
 }
 

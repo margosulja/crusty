@@ -22,6 +22,10 @@ impl CodeGen {
     }
 
     pub fn generate(&mut self, stmts: &[Stmt]) -> Result<String, String> {
+        self.emit_line(".section .text");
+        self.emit_line("    .globl main");
+        self.emit_line("    .type main, @function");
+
         for stmt in stmts {
             self.generate_stmt(stmt)?;
         }
@@ -53,11 +57,11 @@ impl CodeGen {
         self.rbp_offset += size_offset;
 
         match var_decl.value.clone() {
-            Expr::Number(n) => Ok(self.emit(format!("    mov DWORD PTR [rbp-{}], {}\n", self.rbp_offset, n).as_str())),
+            Expr::Number(n) => Ok(self.emit(format!("    movl ${}, -{}(%rbp)\n", n, self.rbp_offset).as_str())),
             Expr::String(str) => {
                 /* only process chars */
                 if str.len() == 1 {
-                    Ok(self.emit(format!("    mov BYTE PTR [rbp-{}], {}\n", self.rbp_offset, str.as_bytes()[0]).as_str()))
+                    Ok(self.emit(format!("    movl ${}, -{}(%rbp)\n", str.as_bytes()[0], self.rbp_offset).as_str()))
                 } else {
                     self.generate_string(&*str)?;
                     Ok(self.emit(format!("    mov QWORD PTR [rbp-{}], OFFSET FLAT:.LC{}\n", self.rbp_offset, self.strings.get(&str).unwrap()).as_str()))
@@ -65,21 +69,20 @@ impl CodeGen {
             }
             _ => Ok(())
         }
-
         // Ok(())
     }
 
     fn generate_fn_decl(&mut self, func_decl: &FunctionDecl) -> Result<(), String> {
         self.emit(format!("{}:\n", func_decl.name).as_str());
-        self.emit_line("    push rbp");
-        self.emit_line("    mov rbp, rsp");
+        self.emit_line("    pushq %rbp");
+        self.emit_line("    movq %rsp, %rbp");
 
         for stmt in func_decl.body.iter() {
             self.generate_stmt(&stmt)?;
         }
 
-        self.emit_line("    mov eax, 0");
-        self.emit_line("    pop rbp");
+        self.emit_line("    movl $0, %eax");
+        self.emit_line("    popq %rbp");
         self.emit_line("    ret");
         Ok(())
     }
