@@ -1,8 +1,6 @@
 # crusty
 A simple C compiler which targets x86-64 gcc 15.2
 
-Code generation is dead simple and can only support these straight forward compilations, more support will be added soon.
-
 # Features & Info
 • Local variable declarations.
 
