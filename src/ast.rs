@@ -27,6 +27,7 @@ pub enum Stmt {
     Expression(Expr),
     VariableDecl(VariableDecl), /* name, value */
     FunctionDecl(FunctionDecl),
+    Return(Return),
 }
 
 #[derive(Debug)]
@@ -37,10 +38,22 @@ pub struct VariableDecl {
 }
 
 #[derive(Debug)]
+pub struct Return {
+    pub value: Expr,
+}
+
+#[derive(Debug)]
+pub struct Parameter {
+    pub data_type: String,
+    pub name: String,
+}
+
+#[derive(Debug)]
 pub struct FunctionDecl {
     pub data_type: String,
     pub name: String,
     pub body: Vec<Stmt>,
+    pub params: Vec<Parameter>,
 }
 
 impl Binop {

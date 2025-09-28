@@ -1,4 +1,4 @@
-use crate::ast::{Binop, Expr, FunctionDecl, Stmt, VariableDecl};
+use crate::ast::{Binop, Expr, FunctionDecl, Parameter, Return, Stmt, VariableDecl};
 use crate::ast::Expr::{FunctionCall, Identifier};
 use crate::lexer::*;
 
@@ -61,6 +61,7 @@ impl<'a> Parser<'a> {
         let stmt = match self.peek() {
             Some(token) => match token.token_type {
                 TokenType::DataType => self.parse_variable_declaration()?,
+                TokenType::Return => self.parse_return_stmt()?,
                 _ => Stmt::Expression(self.parse_expr()?),
             },
             None => return Err("[twee::error] unexpected end of input".to_string()),
@@ -71,6 +72,19 @@ impl<'a> Parser<'a> {
         }
 
         Ok(stmt)
+    }
+
+    /*
+        Parse a return statement.
+        Syntax:
+            return value<Expr>;
+        Example:
+            return 42;
+     */
+    fn parse_return_stmt(&mut self) -> Result<Stmt, String> {
+        self.consume(TokenType::Return)?;
+        let value = self.parse_expr()?;
+        Ok(Stmt::Return(Return { value }))
     }
 
     /*
@@ -113,16 +127,39 @@ impl<'a> Parser<'a> {
 
     /*
         Parse a function declaration.
-        TODO: Add argument and parameter support. (right now just parse a main entry point)
         Syntax:
             int main() { ... }
     */
     fn parse_function_declaration(&mut self, data_type: String, name: String) -> Result<Stmt, String> {
         self.consume(TokenType::LParen)?;
-        self.consume(TokenType::RParen)?;
+
+        let mut params: Vec<Parameter> = vec![];
+
+        /* empty fn params */
+        if self.check(&TokenType::RParen) {
+            self.advance();
+        } else {
+            loop {
+                let param_type = self.consume(TokenType::DataType)?.lexeme;
+                let param_name = self.consume(TokenType::Identifier)?.lexeme;
+
+                params.push(Parameter {
+                    data_type: param_type,
+                    name: param_name
+                });
+
+                if self.check(&TokenType::Comma) {
+                    self.advance();
+                } else if self.check(&TokenType::RParen) {
+                    self.advance(); // eat da ')'
+                    break;
+                } else {
+                    return Err("Expected ',' or ')' in function parameters".to_string());
+                }
+            }
+        }
 
         let mut body = vec![];
-
         self.consume(TokenType::LBrace)?;
 
         loop {
@@ -135,7 +172,8 @@ impl<'a> Parser<'a> {
         Ok(Stmt::FunctionDecl(FunctionDecl {
             data_type,
             name,
-            body
+            body,
+            params
         }))
     }
 

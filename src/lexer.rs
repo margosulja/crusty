@@ -18,6 +18,7 @@ pub enum TokenType {
     LBrace,
     RBrace,
     Comma,
+    Return,
     EOF,
 }
 
@@ -44,6 +45,8 @@ impl<'a> Lexer<'a> {
     pub fn new(source: &'a str) -> Self {
         let mut keywords = HashMap::new();
 
+        keywords.insert("return", TokenType::Return);
+        
         keywords.insert("int", TokenType::DataType);
         keywords.insert("char", TokenType::DataType);
         keywords.insert("char*", TokenType::DataType);
