@@ -27,8 +27,6 @@ Check `tests` for some examples!
 - Automatic GCC compilation and linking.
 
 ```c
-
-```c
 int main() {
     int x = 1234;
     char* y = "hello";
