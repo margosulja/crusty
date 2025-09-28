@@ -2,29 +2,37 @@
 A simple C compiler which targets x86-64 gcc 15.2
 
 # Features & Info
-• Local variable declarations.
-
-• Function declarations.
-
-• `char*`, `char`, `int` support.
-
-• System V ABI calling convention on x86-64 Linux.
+- Local variable declarations.
+- Function declarations.
+- Function calls with argument passing.
+- Variadic function support, such as `printf` (which depends on libc).
+- `char*`, `char`, `int` support.
+- System V ABI calling convention on x86-64 Linux.
 
 ```c
 int main() {
-    int x = 42;
+    char* msg = "Hello, World!";
+    printf(msg);
 }
 ```
 
-```asm
+```
+.section .rodata
+.LC0:
+    .string "Hello, World!
+"
 .section .text
     .globl main
     .type main, @function
 main:
     pushq %rbp
     movq %rsp, %rbp
-    movl $42, -4(%rbp)
+    leaq .LC0(%rip), %rax
+    movq %rax, -8(%rbp)
+    movq -8(%rbp), %rdi
     movl $0, %eax
-    popq %rbp
+    call printf
+    leave
     ret
+
 ```
