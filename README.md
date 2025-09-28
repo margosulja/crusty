@@ -7,7 +7,7 @@ crusty will automatically assemble and link the generated assembly for you.
 $ crusty main.c
 ```
 
-Check `tests` for some examples!
+Check `examples` for some examples!
 
 # Features & Info
 - Local variable declarations with proper stack alignment.
