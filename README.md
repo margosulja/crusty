@@ -5,8 +5,11 @@ Code generation is dead simple and can only support these straight forward compi
 
 # Features & Info
 • Local variable declarations.
+
 • Function declarations.
+
 • `char*`, `char`, `int` support.
+
 • System V ABI calling convention on x86-64 Linux.
 
 ```c
