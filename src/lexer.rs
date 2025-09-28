@@ -17,6 +17,7 @@ pub enum TokenType {
     RParen,
     LBrace,
     RBrace,
+    Comma,
     EOF,
 }
 
@@ -117,6 +118,11 @@ impl<'a> Lexer<'a> {
                 ':' => {
                     self.advance();
                     self.make(TokenType::Colon, ch.to_string())
+                }
+
+                ',' => {
+                    self.advance();
+                    self.make(TokenType::Comma, ch.to_string())
                 }
 
                 '+' => {

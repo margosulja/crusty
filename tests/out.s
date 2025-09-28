@@ -1,10 +1,17 @@
+.section .rodata
+.LC0:
+    .string "hello world!
+"
 .section .text
     .globl main
     .type main, @function
 main:
     pushq %rbp
     movq %rsp, %rbp
-    movl $42, -4(%rbp)
+    leaq .LC0(%rip), %rax
+    movq %rax, -8(%rbp)
+   movq -8(%rbp), %rdi
     movl $0, %eax
-    popq %rbp
+   call printf
+    leave
     ret

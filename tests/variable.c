@@ -1,3 +1,4 @@
 int main() {
-    int x = 42;
+    char* hi = "hello world!\n";
+    printf(hi);
 }

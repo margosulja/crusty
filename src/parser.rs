@@ -1,5 +1,5 @@
 use crate::ast::{Binop, Expr, FunctionDecl, Stmt, VariableDecl};
-use crate::ast::Expr::Identifier;
+use crate::ast::Expr::{FunctionCall, Identifier};
 use crate::lexer::*;
 
 pub struct Parser<'a> {
@@ -195,6 +195,10 @@ impl<'a> Parser<'a> {
                     let value = token.lexeme.clone();
                     self.advance();
 
+                    if self.check(&TokenType::LParen) {
+                        return Ok(self.parse_function_call(value)?)
+                    }
+
                     Ok(Expr::Identifier(value))
                 }
 
@@ -222,6 +226,37 @@ impl<'a> Parser<'a> {
 
             None => Err("[twee::error] unexpected end of input".to_string()),
         }
+    }
+
+    fn parse_function_call(&mut self, callee: String) -> Result<Expr, String> {
+        self.advance();
+
+        let mut args: Vec<Expr> = vec![];
+
+        /* empty fn call args */
+        if self.check(&TokenType::RParen) {
+            self.advance();
+            return Ok(FunctionCall { callee, args })
+        }
+
+        loop {
+            args.push(self.parse_expr()?);
+
+            if self.check(&TokenType::Comma) {
+                self.advance();
+            } else if self.check(&TokenType::RParen) {
+                break;
+            } else {
+                return Err("Expected ',' or ')' in function call arguments list.".to_string());
+            }
+        }
+
+        self.consume(TokenType::RParen)?;
+
+        Ok(FunctionCall {
+            callee,
+            args
+        })
     }
 
     /*

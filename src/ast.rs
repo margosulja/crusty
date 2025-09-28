@@ -8,6 +8,10 @@ pub enum Expr {
         op: Binop,
         right: Box<Expr>,
     },
+    FunctionCall {
+        callee: String,
+        args: Vec<Expr>
+    }
 }
 
 #[derive(Debug, Clone)]
