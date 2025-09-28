@@ -14,38 +14,19 @@ Code generation is dead simple and can only support these straight forward compi
 
 ```c
 int main() {
-    int x = 10;
-    char w = 'a';
+    int x = 42;
 }
 ```
 
 ```asm
+.section .text
+    .globl main
+    .type main, @function
 main:
-    push rbp
-    mov rbp, rsp
-    
-    ; int x = 10
-    mov DWORD PTR [rbp-4], 10
-    ; char w = 'a';
-    mov BYTE PTR [rbp-5], 97
-    
-    mov eax, 0
-    pop rbp
+    pushq %rbp
+    movq %rsp, %rbp
+    movl $42, -4(%rbp)
+    movl $0, %eax
+    popq %rbp
     ret
 ```
-
-#### Emission
-```asm
-main:
-    ; function prologue
-    push rbp
-    mov rbp, rsp
-    ; body
-    mov DWORD PTR [rbp-4], 5
-    ; function epilogue
-    mov eax, 0
-    pop rbp
-    ret
-```
-
-`0` is implicitly returned from the function if a return is not available.
