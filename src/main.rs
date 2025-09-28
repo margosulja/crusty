@@ -1,4 +1,5 @@
 use std::fs::{read_to_string, write};
+use std::process::Command;
 use crate::codegen::CodeGen;
 use crate::lexer::Lexer;
 use crate::parser::Parser;
@@ -24,8 +25,20 @@ fn main() {
 
         let asm = codegen.generate(&*program).unwrap();
 
-        println!("{asm}");
-        write("out.s", asm).unwrap();
+        write("out.s", &asm).unwrap();
+        println!("crusty generated assembly saved to out.s");
+
+        let output = Command::new("gcc")
+            .args(["-no-pie", "out.s", "-o", "out"])
+            .output()
+            .expect("Failed to execute gcc");
+
+        if output.status.success() {
+            println!("crusty compilation successful! run with: ./out");
+        } else {
+            println!("crusty failed to compile:");
+            println!("{}", String::from_utf8_lossy(&output.stderr));
+        }
     }
 }
 

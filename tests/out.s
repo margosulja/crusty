@@ -10,8 +10,8 @@ main:
     movq %rsp, %rbp
     leaq .LC0(%rip), %rax
     movq %rax, -8(%rbp)
-   movq -8(%rbp), %rdi
+    movq -8(%rbp), %rdi
     movl $0, %eax
-   call printf
+    call printf
     leave
     ret
