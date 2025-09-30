@@ -129,6 +129,7 @@ impl CodeGen {
             let size = self.get_type_size(&param.data_type);
             self.rbp_offset += size;
             self.variable_offsets.insert(param.name.clone(), self.rbp_offset);
+            self.variable_types.insert(param.name.clone(), param.data_type.clone());
         }
 
         self.emit(format!("{}:\n", func_decl.name).as_str());
