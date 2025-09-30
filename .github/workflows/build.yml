@@ -3,8 +3,6 @@ name: Build Versioned Binaries
 on:
   push:
     branches: [ main, master, develop ]
-    tags:
-      - 'v*'
   pull_request:
     branches: [ main, master ]
 
@@ -78,9 +76,11 @@ jobs:
           retention-days: 30
 
       - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
           files: ${{ matrix.artifact_name }}-${{ steps.version.outputs.version }}${{ matrix.binary_ext }}
           draft: false
           prerelease: false
