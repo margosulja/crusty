@@ -1,5 +1,7 @@
 name: Build Versioned Binaries
-
+permissions:
+  contents: write
+  packages: write
 on:
   push:
     branches: [ main, master, develop ]
